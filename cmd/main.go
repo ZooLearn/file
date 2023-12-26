@@ -5,6 +5,7 @@ import (
 
 	route "github.com/ZooLearn/file/api/route"
 	"github.com/ZooLearn/file/bootstrap"
+	"github.com/ZooLearn/file/internal/log"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,8 +13,12 @@ func main() {
 
 	app := bootstrap.App()
 	defer func() {
-		app.Consumer.Shutdown()
-		app.Producer.Shutdown()
+		if err := app.Consumer.Shutdown(); err != nil {
+			log.Errorf("shutdown consumer: %s", err)
+		}
+		if err := app.Producer.Shutdown(); err != nil {
+			log.Errorf("shutdown producer: %s", err)
+		}
 	}()
 	env := app.Env
 
