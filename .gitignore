@@ -1,3 +1,5 @@
 config.yaml
 .vscode/launch.json
 cmd/__debug_*
+uploads/*
+convert/*

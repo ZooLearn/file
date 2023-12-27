@@ -4,7 +4,9 @@ Open Source
 # prepare:
 - install [golang](https://go.dev/)
 - install [pre-commit](https://pre-commit.com/)
-
+- install [rabbitmq](https://www.rabbitmq.com/tutorials/tutorial-one-go.html)
+- install [ffmpeg](https://ffmpeg.org/download.html)
+  
 # upload file example
 ```
 package main

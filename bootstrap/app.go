@@ -2,11 +2,15 @@ package bootstrap
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/ZooLearn/file/config"
 	"github.com/ZooLearn/file/internal/log"
 	"github.com/ZooLearn/file/internal/rabbitx"
+	"github.com/ZooLearn/file/internal/transcodex"
+	"github.com/ZooLearn/file/internal/tusdx"
+
 	"github.com/rabbitmq/amqp091-go"
 )
 
@@ -26,7 +30,17 @@ func App() Application {
 	consumer := rabbitx.NewConsumer(context.Background(), cfgs.ConsumerConf, func(deliveries <-chan amqp091.Delivery, done chan error) {
 		for {
 			val := <-deliveries
-			fmt.Println(string(val.Body))
+			data := tusdx.Data{}
+			if err := json.Unmarshal(val.Body, &data); err != nil {
+				log.Errorf("unmarshal: %s", err)
+				if err := val.Ack(false); err != nil {
+					log.Infof("ack %s", err)
+				}
+				continue
+			}
+			if err := transcodex.CreateHLS(fmt.Sprintf("./uploads/%s", data.ID), data.ID, "./convert", 10); err != nil {
+				panic(err)
+			}
 			if err := val.Ack(false); err != nil {
 				log.Infof("ack %s", err)
 			}

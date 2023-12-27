@@ -2,7 +2,6 @@ package rabbitx
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/ZooLearn/file/internal/log"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -87,14 +86,10 @@ func NewProducer(ctx context.Context, cfgs RabbitmqProConf) *Producer {
 	}
 }
 
-func (p *Producer) Publish(data interface{}) error {
-	input, err := json.Marshal(data)
-	if err != nil {
-		log.Errorf("parser data: %s", err)
-		return err
-	}
+func (p *Producer) Publish(data []byte) error {
+
 	if err := p.channel.PublishWithContext(context.Background(), p.cfgs.Exchange, p.cfgs.RoutingKey, true, false, amqp.Publishing{
-		Body: input,
+		Body: data,
 	}); err != nil {
 		log.Errorf("send data to queue: %s", err)
 		return err

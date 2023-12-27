@@ -13,9 +13,9 @@ import (
 func Setup(env config.EnvConf, timeout time.Duration, ginx *gin.Engine, producer *rabbitx.Producer) {
 	protectedRouter := ginx.Group("")
 	protectedRouter.Use()
-	handler := tusdx.TusdHandler(producer)
-	protectedRouter.POST("/files/", gin.WrapF(handler.PostFile))
-	protectedRouter.HEAD("/files/:id", gin.WrapF(handler.HeadFile))
-	protectedRouter.PATCH("/files/:id", gin.WrapF(handler.PatchFile))
-	protectedRouter.GET("/files/:id", gin.WrapF(handler.GetFile))
+	handler := tusdx.TusdMediaHandler(producer)
+	protectedRouter.POST("/media/files/", gin.WrapF(handler.PostFile))
+	protectedRouter.HEAD("/media/files/:id", gin.WrapF(handler.HeadFile))
+	protectedRouter.PATCH("/media/files/:id", gin.WrapF(handler.PatchFile))
+	protectedRouter.GET("/media/files/:id", gin.WrapF(handler.GetFile))
 }

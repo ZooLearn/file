@@ -1,6 +1,7 @@
 package tusdx
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/ZooLearn/file/internal/log"
@@ -9,7 +10,11 @@ import (
 	tusdHandler "github.com/tus/tusd/pkg/handler"
 )
 
-func TusdHandler(producer *rabbitx.Producer) *tusdHandler.UnroutedHandler {
+type Data struct {
+	ID string
+}
+
+func TusdMediaHandler(producer *rabbitx.Producer) *tusdHandler.UnroutedHandler {
 	store := filestore.FileStore{
 		Path: "./uploads",
 	}
@@ -18,19 +23,27 @@ func TusdHandler(producer *rabbitx.Producer) *tusdHandler.UnroutedHandler {
 	store.UseIn(composer)
 
 	h, err := tusdHandler.NewUnroutedHandler(tusdHandler.Config{
-		BasePath:              "/files/",
+		BasePath:              "/media/files/",
 		StoreComposer:         composer,
 		NotifyCompleteUploads: true,
 	})
 
 	if err != nil {
-		panic(fmt.Errorf("Unable to create handler: %s", err))
+		panic(fmt.Errorf("unable to create handler: %s", err))
 	}
 
 	go func() {
 		for {
 			event := <-h.CompleteUploads
-			err := producer.Publish(string(event.Upload.ID))
+			input, err := json.Marshal(Data{
+				ID: event.Upload.ID,
+			})
+			if err != nil {
+				log.Errorf("publish to rabbit: %s", err)
+				continue
+			}
+			fmt.Println(":=====>", string(input))
+			err = producer.Publish(input)
 			if err != nil {
 				log.Errorf("publish to rabbit: %s", err)
 			}
